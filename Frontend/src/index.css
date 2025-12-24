@@ -9,9 +9,14 @@ body {
   font-family: "Roboto Slab", serif;
 }
 
+#root {
+  min-height: 100vh;
+}
+
 .image-inverted {
   filter: invert(100%);
 }
+
 .nav-link {
   font-weight: 600;
   text-transform: uppercase;
@@ -22,6 +27,7 @@ body {
   text-decoration: none;
   letter-spacing: 1px;
 }
+
 .MuiOutlinedInput-input-root.Mui-focused,
 .MuiOutlinedInput-notchedOutline {
   border-color: white !important;

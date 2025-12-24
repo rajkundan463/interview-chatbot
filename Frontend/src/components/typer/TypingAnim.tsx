@@ -4,22 +4,22 @@ const TypingAnim = () => {
   return (
     <TypeAnimation
       sequence={[
-        // Same substring at the start will only be typed once, initially
-        "Chat With Your OWN AI",
-        1000,
-        "Built With OpenAI 🤖",
-        2000,
-        "Your Own Customized ChatGPT 💻",
+        "Chat With AI Assistant",
+        1500,
+        "Built With GEMINI + MERN",
+        1500,
+        "Your Personal Interview Assistant ",
         1500,
       ]}
       speed={50}
-      style={{
-        fontSize: "60px",
-        color: "white",
-        display: "inline-block",
-        textShadow: "1px 1px 20px #000",
-      }}
       repeat={Infinity}
+      style={{
+        fontSize: "clamp(28px, 5vw, 60px)",
+        fontFamily: "Work Sans, sans-serif",
+        fontWeight: 700,
+        color: "white",
+        textShadow: "1px 1px 25px rgba(0,0,0,0.6)",
+      }}
     />
   );
 };

@@ -1,117 +1,134 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  Card,
+  CardContent,
+  IconButton,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 import {
   getAllQuestions,
   addQuestion,
-  updateQuestion,
   deleteQuestion,
 } from "../helpers/api-communicator";
 
 type Question = {
   _id: string;
+  question: string;
   category: string;
-  question?: string;
-  text?: string;
 };
 
-function AdminHome() {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [question, setQuestion] = useState("");
-  const [category, setCategory] = useState("DSA");
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [editId, setEditId] = useState<string | null>(null);
+const categories = ["DSA", "DBMS", "OOPS", "OS", "CN"];
 
-  const categories = ["DSA", "OS", "DBMS", "Behavioral"];
+const QuestionPageAdmin = () => {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [text, setText] = useState("");
+  const [category, setCategory] = useState("DSA");
 
   useEffect(() => {
-    getAllQuestions()
-      .then((data) => setQuestions(data))
-      .catch((err) => console.error("Failed to load questions:", err));
+    loadQuestions();
   }, []);
 
+  const loadQuestions = async () => {
+    const data = await getAllQuestions();
+    setQuestions(data);
+  };
+
   const handleAdd = async () => {
-    if (question.trim() === "") return;
-    try {
-      const newQuestion = await addQuestion(question, category);
-      setQuestions([...questions, newQuestion]);
-      setQuestion("");
-    } catch (err) {
-      console.error("Failed to add question:", err);
-    }
+    if (!text.trim()) return;
+    const q = await addQuestion(text, category);
+    setQuestions((prev) => [...prev, q]);
+    setText("");
   };
 
-  const handleEdit = (index: number) => {
-    const q = questions[index];
-    setQuestion(q.text || q.question || "");
-    setCategory(q.category);
-    setEditIndex(index);
-    setEditId(q._id);
+  const handleDelete = async (id: string) => {
+    await deleteQuestion(id);
+    setQuestions((prev) => prev.filter((q) => q._id !== id));
   };
 
-  const handleUpdate = async () => {
-    if (question.trim() === "" || editId === null || editIndex === null) return;
-    try {
-      await updateQuestion(editId, question);
-      const updated = [...questions];
-      updated[editIndex].text = question;
-      setQuestions(updated);
-      setQuestion("");
-      setEditIndex(null);
-      setEditId(null);
-    } catch (err) {
-      console.error("Failed to update question:", err);
-    }
-  };
-
-  const handleDelete = async (index: number) => {
-    const id = questions[index]._id;
-    try {
-      await deleteQuestion(id);
-      setQuestions(questions.filter((_, i) => i !== index));
-    } catch (err) {
-      console.error("Failed to delete question:", err);
-    }
-  };
+  const filteredQuestions = questions.filter(
+    (q) => q.category === category
+  );
 
   return (
-    <div>
-      <h2>Questions</h2>
+    <Box px={{ xs: 2, md: 6 }} py={4}>
+      <Typography variant="h4" mb={3} fontWeight={700}>
+        Admin Dashboard – Questions
+      </Typography>
 
-      <select
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        disabled={editIndex !== null}
-      >
-        {categories.map((cat) => (
-          <option key={cat} value={cat}>
-            {cat}
-          </option>
-        ))}
-      </select>
+      {/* ADD QUESTION SECTION */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography fontWeight={600} mb={2}>
+            Add New Question
+          </Typography>
 
-      <input
-        type="text"
-        placeholder="Enter question"
-        value={question}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuestion(e.target.value)}
-      /> 
+          <Box display="flex" gap={2} flexWrap="wrap">
+            <Select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              size="small"
+            >
+              {categories.map((cat) => (
+                <MenuItem key={cat} value={cat}>
+                  {cat}
+                </MenuItem>
+              ))}
+            </Select>
 
-      {editIndex === null ? (
-        <button onClick={handleAdd}>Add</button>
-      ) : (
-        <button onClick={handleUpdate}>Update</button>
+            <TextField
+              fullWidth
+              placeholder="Enter question"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+            />
+
+            <Button variant="contained" onClick={handleAdd}>
+              Add
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* QUESTION LIST */}
+      <Typography variant="h6" mb={2}>
+        {category} Questions
+      </Typography>
+
+      {filteredQuestions.length === 0 && (
+        <Typography>No questions found.</Typography>
       )}
 
-      <ul>
-        {questions.map((q, i) => (
-          <li key={q._id}>
-            <strong>{q.category}</strong>: {q.text || q.question}
-            <button onClick={() => handleEdit(i)}>Edit</button>
-            <button onClick={() => handleDelete(i)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+      <Box display="flex" flexDirection="column" gap={2}>
+        {filteredQuestions.map((q) => (
+          <Card key={q._id}>
+            <CardContent
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography>{q.question}</Typography>
 
-export default AdminHome;
+              <IconButton
+                color="error"
+                onClick={() => handleDelete(q._id)}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </CardContent>
+          </Card>
+        ))}
+      </Box>
+    </Box>
+  );
+};
+
+export default QuestionPageAdmin;

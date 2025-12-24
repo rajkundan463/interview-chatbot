@@ -7,78 +7,91 @@ import {
   List,
   ListItem,
   Button,
+  Paper,
 } from "@mui/material";
 import { getQuestions } from "../helpers/api-communicator";
 
-interface QuestionItem {
+// ✅ Proper type
+type Question = {
   _id: string;
   question_id: string;
   question: string;
   category: string;
-  answer_vector: number[];
-  created_at: string;
-}
+};
 
-const QuestionsPage = () => {
-  const { category } = useParams();
+const QuestionsPageUser = () => {
+  const { category } = useParams<{ category: string }>();
   const navigate = useNavigate();
-  const [questions, setQuestions] = useState<QuestionItem[]>([]);
+
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-  const fetchQuestions = async () => {
-    try {
-      const data = await getQuestions(category || "");
+    if (!category) return;
 
-      const filteredQuestions = data.filter(
-        (item: any) => item.question && item.question_id
-      );
+    setLoading(true);
+    getQuestions(category)
+      .then((data) => setQuestions(data))
+      .catch(() => setQuestions([]))
+      .finally(() => setLoading(false));
+  }, [category]);
 
-      setQuestions(filteredQuestions);
-    } catch (err: any) {
-      console.error("Error fetching questions:", err.message || err);
-      setError("Failed to load questions");
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (!category) {
+    return (
+      <Typography textAlign="center" mt={5}>
+        Invalid Category
+      </Typography>
+    );
+  }
 
-  fetchQuestions();
-}, [category]);
-
-
-  const handlePractice = (questionId: string) => {
-    navigate(`/chatpage/${category}/${questionId}`);
-  };
-
-  if (loading) return <CircularProgress sx={{ m: 4 }} />;
-  if (error) return <Typography color="error">{error}</Typography>;
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" mt={5}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <Box p={4}>
-      <Typography variant="h5" mb={2}>
-        {category?.toUpperCase()} Questions
+    <Box px={{ xs: 2, md: 6 }} py={4}>
+      <Typography variant="h4" fontWeight={700} mb={3}>
+        {category} Questions
       </Typography>
-      <List>
-        {questions.map((q) => (
-          <ListItem
-            key={q._id}
-            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-          >
-            <Typography>{q.question}</Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handlePractice(q.question_id)}
-            >
-              Practice
-            </Button>
-          </ListItem>
-        ))}
-      </List>
+
+      {questions.length === 0 ? (
+        <Typography>No questions available.</Typography>
+      ) : (
+        <List sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {questions.map((q) => (
+            <Paper key={q._id} elevation={2}>
+              <ListItem
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 2,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Typography sx={{ flex: 1 }}>
+                  {q.question}
+                </Typography>
+
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() =>
+                    navigate(`/chatpage/${category}/${q.question_id}`)
+                  }
+                >
+                  Practice
+                </Button>
+              </ListItem>
+            </Paper>
+          ))}
+        </List>
+      )}
     </Box>
   );
 };
 
-export default QuestionsPage;
+export default QuestionsPageUser;

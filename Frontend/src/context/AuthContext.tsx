@@ -1,9 +1,9 @@
 import {
-  ReactNode,
   createContext,
   useContext,
   useEffect,
   useState,
+  ReactNode,
 } from "react";
 import {
   checkAuthStatus,
@@ -12,77 +12,63 @@ import {
   signupUser,
 } from "../helpers/api-communicator";
 
-// ✅ Updated User type with role
 type User = {
   name: string;
   email: string;
   role: "user" | "admin";
 };
 
-type UserAuth = {
-  isLoggedIn: boolean;
+type AuthContextType = {
   user: User | null;
-  login: (email: string, password: string) => Promise<User>; // updated
+  isLoggedIn: boolean;
+  login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
-const AuthContext = createContext<UserAuth | null>(null);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    async function checkStatus() {
-      const data = await checkAuthStatus();
-      if (data) {
-        setUser({ email: data.email, name: data.name, role: data.role });
+    const check = async () => {
+      try {
+        const data = await checkAuthStatus();
+        setUser(data);
         setIsLoggedIn(true);
+      } catch {
+        setUser(null);
+        setIsLoggedIn(false);
       }
-    }
-    checkStatus();
+    };
+    check();
   }, []);
 
-  const login = async (email: string, password: string): Promise<User> => {
+  const login = async (email: string, password: string) => {
     const data = await loginUser(email, password);
-    if (data) {
-      const newUser: User = {
-        email: data.user.email,
-        name: data.user.name,
-        role: data.user.role,
-      };
-      setUser(newUser);
-      setIsLoggedIn(true);
-      return newUser; // ✅ return user
-    }
-    throw new Error("Login failed");
+    setUser(data.user);
+    setIsLoggedIn(true);
   };
 
   const signup = async (name: string, email: string, password: string) => {
     const data = await signupUser(name, email, password);
-    if (data) {
-      setUser({ email: data.email, name: data.name, role: data.role });
-      setIsLoggedIn(true);
-    }
+    setUser(data);
+    setIsLoggedIn(true);
   };
 
   const logout = async () => {
     await logoutUser();
-    setIsLoggedIn(false);
     setUser(null);
-    window.location.reload();
+    setIsLoggedIn(false);
   };
 
-  const value = {
-    user,
-    isLoggedIn,
-    login,
-    logout,
-    signup,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, isLoggedIn, login, signup, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => useContext(AuthContext);

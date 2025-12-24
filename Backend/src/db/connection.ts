@@ -1,20 +1,6 @@
-import { connect, disconnect } from "mongoose";
-async function connectToDatabase() {
-  try {
-    await connect(process.env.MONGODB_URL);
-  } catch (error) {
-    console.log(error);
-    throw new Error("Could not Connect To MongoDB");
-  }
-}
+import mongoose from "mongoose";
 
-async function disconnectFromDatabase() {
-  try {
-    await disconnect();
-  } catch (error) {
-    console.log(error);
-    throw new Error("Could not Disconnect From MongoDB");
-  }
-}
-
-export { connectToDatabase, disconnectFromDatabase };
+export const connectToDatabase = async () => {
+  await mongoose.connect(process.env.MONGO_URI as string);
+  console.log("✅ MongoDB connected");
+};

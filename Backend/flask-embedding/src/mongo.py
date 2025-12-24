@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 
 # MongoDB connection URI
-MONGO_URI = 'mongodb+srv://PayalAhirwar:cGF5YWxAMDU1@cluster0.kxxuacn.mongodb.net/chatbot?retryWrites=true&w=majority'
+MONGO_URI = 'mongodb+srv://rajkundan463:cGF5YWxAMDU1@cluster0.kxxuacn.mongodb.net/chatbot?retryWrites=true&w=majority'
 
 # Create MongoDB client and database
 client = MongoClient(MONGO_URI)

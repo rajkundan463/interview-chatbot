@@ -8,22 +8,29 @@ const Footer = () => {
         style={{
           width: "100%",
           minHeight: "20vh",
-          maxHeight: "30vh",
           marginTop: 60,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        <p style={{ fontSize: "30px", textAlign: "center", padding: "20px" }}>
-          Built With love by
-          <span>
-            <Link
-              style={{ color: "white" }}
-              className="nav-link"
-              to={"https://youtube.com/indiancoders"}
-            >
-              Indian Coders
-            </Link>
-          </span>
-          💘
+        <p
+          style={{
+            fontSize: "clamp(16px, 3vw, 22px)",
+            textAlign: "center",
+            opacity: 0.9,
+          }}
+        >
+          BUILT WITH ❤️ BY{" "}
+          <a
+            href="https://github.com/RajKundan"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="nav-link"
+            style={{ color: "white", fontWeight: 700 }}
+          >
+            RajKundan
+          </a>
         </p>
       </div>
     </footer>

@@ -1,54 +1,77 @@
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Header from "./components/Header";
-import { Routes, Route } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
+
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import NotFound from "./pages/NotFound";
-import AdminHome from "./pages/QuestionPageAdmin";
-import { useAuth } from "./context/AuthContext";
 import Home2 from "./pages/Home2";
 import QuestionsPage from "./pages/QuestionsPageUser";
 import ChatPage from "./pages/ChatPage";
+import AdminHome from "./pages/QuestionPageAdmin";
+import NotFound from "./pages/NotFound";
 
-// Define the User interface
-interface User {
-  name: string;
-  email: string;
-  password: string;
-  role: "user" | "admin";
-}
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const auth = useAuth();
+  if (!auth?.isLoggedIn) return <Navigate to="/login" replace />;
+  return children;
+};
 
-// Main App component
 function App() {
   const auth = useAuth();
+  const location = useLocation();
+
+  const hideHeader =
+    location.pathname === "/login" || location.pathname === "/signup";
 
   return (
-    <main>
-      <Header />
+    <>
+      {!hideHeader && <Header />}
+
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/questions/:category" element={<QuestionsPage />} />
-        <Route path="/chatpage/:category/:questionId" element={<ChatPage />} />
 
-        {auth?.isLoggedIn && auth.user && (
-          <Route
-            path="/home2"
-            element={
-              (auth.user as User).role === "admin" ? (
+        <Route
+          path="/login"
+          element={auth?.isLoggedIn ? <Navigate to="/home2" /> : <Login />}
+        />
+
+        <Route path="/signup" element={<Signup />} />
+
+        <Route
+          path="/home2"
+          element={
+            <ProtectedRoute>
+              {auth?.user?.role === "admin" ? (
                 <AdminHome />
               ) : (
                 <Home2 />
-              )
-            }
-          />
-        )}
+              )}
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/questions/:category"
+          element={
+            <ProtectedRoute>
+              <QuestionsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/chatpage/:category/:questionId"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </main>
+    </>
   );
 }
 

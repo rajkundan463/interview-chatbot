@@ -1,21 +1,18 @@
 import { Router } from "express";
 import {
-  getQuestions,
-  getAllQuestions,
   addQuestion,
-  updateQuestion,
   deleteQuestion,
-  test
+  getAllQuestions,
+  getQuestions,
+  updateQuestion,
 } from "../controllers/question-controller.js";
 
-const questionRoutes = Router();
+const router = Router();
 
-console.log("Question Routes Loaded");
-questionRoutes.get("/test", test); // Test endpoint to check if routes are workin
-questionRoutes.post("/add", addQuestion);
-questionRoutes.get("/get", getAllQuestions);
-questionRoutes.put("/:id", updateQuestion);
-questionRoutes.delete("/:id", deleteQuestion);
-questionRoutes.get("/:category",getQuestions);
+router.post("/add", addQuestion);
+router.get("/get", getAllQuestions);
+router.get("/:category", getQuestions);
+router.put("/update/:id", updateQuestion);
+router.delete("/delete/:id", deleteQuestion);
 
-export default questionRoutes;
+export default router;
