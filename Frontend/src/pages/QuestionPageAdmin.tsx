@@ -8,26 +8,18 @@ import {
   MenuItem,
   Card,
   CardContent,
-  IconButton,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-
 import {
   getAllQuestions,
   addQuestion,
   deleteQuestion,
 } from "../helpers/api-communicator";
+import toast from "react-hot-toast";
 
-type Question = {
-  _id: string;
-  question: string;
-  category: string;
-};
-
-const categories = ["DSA", "DBMS", "OOPS", "OS", "CN"];
+const categories = ["DSA", "DBMS", "OOPS", "OS", "Behavioral"];
 
 const QuestionPageAdmin = () => {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [category, setCategory] = useState("DSA");
 
@@ -41,31 +33,39 @@ const QuestionPageAdmin = () => {
   };
 
   const handleAdd = async () => {
-    if (!text.trim()) return;
-    const q = await addQuestion(text, category);
-    setQuestions((prev) => [...prev, q]);
+    if (!text.trim()) return toast.error("Enter question");
+    await addQuestion(text, category);
     setText("");
+    toast.success.ensure?.("Question added") ?? toast.success("Added");
+    loadQuestions();
   };
 
   const handleDelete = async (id: string) => {
     await deleteQuestion(id);
-    setQuestions((prev) => prev.filter((q) => q._id !== id));
+    toast.success("Deleted");
+    loadQuestions();
   };
 
-  const filteredQuestions = questions.filter(
-    (q) => q.category === category
-  );
+  const filtered = questions.filter((q) => q.category === category);
 
   return (
-    <Box px={{ xs: 2, md: 6 }} py={4}>
-      <Typography variant="h4" mb={3} fontWeight={700}>
+    <Box p={4}>
+      {/* TITLE */}
+      <Typography variant="h4" mb={3} fontWeight={700} color="white">
         Admin Dashboard – Questions
       </Typography>
 
-      {/* ADD QUESTION SECTION */}
-      <Card sx={{ mb: 4 }}>
+      {/* ADD QUESTION */}
+      <Card
+        sx={{
+          mb: 4,
+          background: "#0b1220",
+          color: "white",
+          borderRadius: 3,
+        }}
+      >
         <CardContent>
-          <Typography fontWeight={600} mb={2}>
+          <Typography variant="h6" mb={2}>
             Add New Question
           </Typography>
 
@@ -74,40 +74,56 @@ const QuestionPageAdmin = () => {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               size="small"
+              sx={{
+                minWidth: 150,
+                background: "#111827",
+                color: "white",
+              }}
             >
-              {categories.map((cat) => (
-                <MenuItem key={cat} value={cat}>
-                  {cat}
+              {categories.map((c) => (
+                <MenuItem key={c} value={c}>
+                  {c}
                 </MenuItem>
               ))}
             </Select>
 
             <TextField
               fullWidth
-              placeholder="Enter question"
+              placeholder="Enter interview question"
               value={text}
               onChange={(e) => setText(e.target.value)}
+              sx={{
+                input: { color: "white" },
+                background: "#111827",
+                borderRadius: 1,
+              }}
             />
 
             <Button variant="contained" onClick={handleAdd}>
-              Add
+              ADD
             </Button>
           </Box>
         </CardContent>
       </Card>
 
-      {/* QUESTION LIST */}
-      <Typography variant="h6" mb={2}>
+      {/* QUESTIONS */}
+      <Typography variant="h6" mb={2} color="white">
         {category} Questions
       </Typography>
 
-      {filteredQuestions.length === 0 && (
-        <Typography>No questions found.</Typography>
-      )}
-
-      <Box display="flex" flexDirection="column" gap={2}>
-        {filteredQuestions.map((q) => (
-          <Card key={q._id}>
+      {filtered.length === 0 ? (
+        <Typography color="gray">No questions added</Typography>
+      ) : (
+        filtered.map((q) => (
+          <Card
+            key={q._id}
+            sx={{
+              mb: 2,
+              background: "#0b1220",
+              color: "white",
+              borderRadius: 3,
+            }}
+          >
             <CardContent
               sx={{
                 display: "flex",
@@ -115,18 +131,20 @@ const QuestionPageAdmin = () => {
                 alignItems: "center",
               }}
             >
-              <Typography>{q.question}</Typography>
+              {/* ✅ FIXED FIELD */}
+              <Typography>{q.text}</Typography>
 
-              <IconButton
+              <Button
                 color="error"
+                variant="outlined"
                 onClick={() => handleDelete(q._id)}
               >
-                <DeleteIcon />
-              </IconButton>
+                DELETE
+              </Button>
             </CardContent>
           </Card>
-        ))}
-      </Box>
+        ))
+      )}
     </Box>
   );
 };
